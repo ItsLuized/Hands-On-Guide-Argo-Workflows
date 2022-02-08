@@ -1,0 +1,63 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  name: wf-exercise1
+spec:
+  entrypoint: DAG
+  templates: 
+  - name: DAG
+    dag:
+      tasks:
+      - name: A
+        template: A-script
+      - name: B1
+        template: B-container
+        dependencies: [A]
+      - name: B2
+        template: B-container
+        dependencies: [B1]
+      - name: B3
+        template: B-container
+        dependencies: [B2]
+      - name: C
+        template: C-resource
+        dependencies: [A]
+      - name: D
+        template: 5s-delay
+        dependencies: [B3, C]
+      - name: Final-A
+        template: A-script
+        dependencies: [D]
+      
+
+  - name: A-script
+    script:
+      image: python:3.8-slim
+      command: [python]
+      source: |
+        print("Task A executed successfully with script template.")
+
+  - name: B-container
+    container:
+      image: python:3.8-slim
+      command: [echo, "Task B executed successfully with container template"]
+
+  - name: C-resource
+    resource:
+      action: create
+      manifest: |
+        apiVersion: argoproj.io/v1alpha1
+        kind: Workflow
+        metadata:
+          name: wf-task-c
+        spec:
+          entrypoint: C
+          templates:
+          - name: C
+            container:
+              image: python:3.8-slim
+              command: [echo, "Task C executed successfully with resource template"]
+
+  - name: 5s-delay
+    suspend:
+      duration: "5s"
