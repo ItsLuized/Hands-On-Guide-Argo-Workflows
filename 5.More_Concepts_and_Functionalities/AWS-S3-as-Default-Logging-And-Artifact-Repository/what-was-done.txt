@@ -1,0 +1,6 @@
+1. We enteder the configmap ```workflow-controller-configmap```
+2. We changed the artifactRepository
+3. Changed:
+    - The bucket name for the s3's bucket name
+    - The enpoint to s3.amazonaws.com
+    - The acccessKeySecret to our secrets name and key
